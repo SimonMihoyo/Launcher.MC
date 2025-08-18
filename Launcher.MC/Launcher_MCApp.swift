@@ -13,5 +13,8 @@ struct Launcher_MCApp: App {
         WindowGroup {
             ContentView()
         }
+        .commands {
+            MainMenu()
+        }
     }
 }
