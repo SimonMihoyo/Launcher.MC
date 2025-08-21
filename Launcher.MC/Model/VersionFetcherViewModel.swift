@@ -76,6 +76,8 @@ class VersionFetcherViewModel: ObservableObject {
         }
     }
     
+
+    
     // MARK: - 初始化时自动加载
     init() {
         loadAllVersions()

@@ -9,6 +9,7 @@ import SwiftUI
 
 let fileutil = FileUtil()
 let fetcher = LoaderFetcher()
+let appThemeColor = Color(red: 0.8, green: 0.2, blue: 0.2) // 红色主题
 
 struct HomeView: View {
     var body: some View {
@@ -27,7 +28,6 @@ struct HomeView: View {
                         print("获取失败: \(error.localizedDescription)")
                     }
                 }
-
                 // 示例2: 获取特定 Minecraft 版本的 Forge 版本
                 fetcher.fetchVersions(for: "1.19.2") { result in
                     switch result {
@@ -37,7 +37,6 @@ struct HomeView: View {
                         print("获取失败: \(error.localizedDescription)")
                     }
                 }
-
                 // 示例3: 获取特定 Minecraft 版本的最新 Forge 版本及其安装器 URL
                 fetcher.fetchLatestVersion(for: "1.20.1") { result in
                     switch result {
@@ -57,7 +56,6 @@ struct HomeView: View {
                         print("获取失败: \(error.localizedDescription)")
                     }
                 }
-
             }
             Button("testNeoForge"){
                 // 示例1: 获取所有 NeoForge 版本
@@ -103,6 +101,7 @@ struct HomeView: View {
                     }
                 }
             }
+            
             Button("testFabric"){
                 // 示例1: 获取所有 Fabric 版本
                 fetcher.fetchAllVersions(loader: .fabric) { result in
@@ -126,7 +125,6 @@ struct HomeView: View {
                         print("获取失败: \(error.localizedDescription)")
                     }
                 }
-                
                 // 示例3: 获取特定 Minecraft 版本的最新 Forge 版本及其安装器 URL
                 fetcher.fetchLatestVersion(for: "1.21.1",loader: .neoforge) { result in
                     switch result {
@@ -148,7 +146,7 @@ struct HomeView: View {
                 }
             }
         }
-        
+        .background(.ultraThickMaterial)
     }
 }
 

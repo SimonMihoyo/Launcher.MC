@@ -15,22 +15,47 @@ class LoaderFetcher: NSObject, XMLParserDelegate {
     private var currentElement = ""
     private var currentVersion = ""
     private var isParsingVersions = false
+    
+    
+    // 为不同加载器创建不同的缓存管理器
+    private func getCacheManager(for loader: ModLoader) -> CacheManager<[ForgeVersion]> {
+        switch loader {
+        case .forge:
+            return CacheManager<[ForgeVersion]>(cacheFileName: "forge_versions.json")
+        case .neoforge:
+            return CacheManager<[ForgeVersion]>(cacheFileName: "neoforge_versions.json")
+        case .fabric:
+            return CacheManager<[ForgeVersion]>(cacheFileName: "fabric_versions.json")
+        }
+    }
 
     // MARK: --------------- 对外接口 ---------------
 
-    /// 1. 取回指定加载器的全部版本
-    func fetchAllVersions(loader: ModLoader = .forge,
-                          completion: @escaping (Result<[ForgeVersion], Error>) -> Void) {
-        self.loader = loader
-
-        switch loader {
-        case .forge, .neoforge:
-            fetchForgeMeta(loader: loader, completion: completion)
-
-        case .fabric:
-            fetchFabricMeta(completion: completion)
-        }
-    }
+    /// 1. 取回指定加载器的全部版本（带缓存）
+       func fetchAllVersions(loader: ModLoader = .forge,
+                             completion: @escaping (Result<[ForgeVersion], Error>) -> Void) {
+           let cacheManager = getCacheManager(for: loader)
+           
+           // 先检查缓存
+           if cacheManager.isCacheValid(), let cachedVersions = cacheManager.loadFromCache() {
+               completion(.success(cachedVersions))
+               return
+           }
+           
+           // 缓存无效，从网络获取
+           switch loader {
+           case .forge, .neoforge:
+               let urlStr = loader == .forge
+                   ? "https://maven.minecraftforge.net/releases/net/minecraftforge/forge/maven-metadata.xml"
+                   : "https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml"
+               
+               fetchAndCacheForgeMeta(urlStr: urlStr, loader: loader, cacheManager: cacheManager, completion: completion)
+               
+           case .fabric:
+               let urlStr = "https://meta.fabricmc.net/v2/versions/loader/"
+               fetchAndCacheFabricMeta(urlStr: urlStr, cacheManager: cacheManager, completion: completion)
+           }
+       }
 
     /// 2. 取回某个 MC 版本对应的全部 Loader 版本
     func fetchVersions(for mcVersion: String,
@@ -77,88 +102,103 @@ class LoaderFetcher: NSObject, XMLParserDelegate {
     }
 
     // MARK: --------------- Forge / NeoForge 实现 ---------------
-    private func fetchForgeMeta(loader: ModLoader,
-                                completion: @escaping (Result<[ForgeVersion], Error>) -> Void) {
-        let urlStr = loader == .forge
-            ? "https://maven.minecraftforge.net/releases/net/minecraftforge/forge/maven-metadata.xml"
-            : "https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml"
-
-        guard let url = URL(string: urlStr) else {
-            completion(.failure(NSError(domain: "LoaderFetcher", code: -1,
-                                        userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
-            return
+        private func fetchAndCacheForgeMeta(urlStr: String, loader: ModLoader,
+                                           cacheManager: CacheManager<[ForgeVersion]>,
+                                           completion: @escaping (Result<[ForgeVersion], Error>) -> Void) {
+            guard let url = URL(string: urlStr) else {
+                completion(.failure(NSError(domain: "LoaderFetcher", code: -1,
+                                            userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+                return
+            }
+            
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error { completion(.failure(error)); return }
+                guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                    completion(.failure(NSError(domain: "LoaderFetcher", code: -2,
+                                                userInfo: [NSLocalizedDescriptionKey: "HTTP error"]))); return
+                }
+                guard let data = data else {
+                    completion(.failure(NSError(domain: "LoaderFetcher", code: -3,
+                                                userInfo: [NSLocalizedDescriptionKey: "No data"]))); return
+                }
+                
+                let parser = XMLParser(data: data)
+                let fetcher = LoaderFetcher()
+                fetcher.loader = loader
+                parser.delegate = fetcher
+                fetcher.versions.removeAll()
+                
+                if parser.parse() {
+                    cacheManager.saveToCache(data: fetcher.versions)
+                    completion(.success(fetcher.versions))
+                } else {
+                    completion(.failure(NSError(domain: "LoaderFetcher", code: -4,
+                                                userInfo: [NSLocalizedDescriptionKey: "XML parse failed"])))
+                }
+            }
+            task.resume()
         }
-
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error { completion(.failure(error)); return }
-            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
-                completion(.failure(NSError(domain: "LoaderFetcher", code: -2,
-                                            userInfo: [NSLocalizedDescriptionKey: "HTTP error"]))); return
-            }
-            guard let data = data else {
-                completion(.failure(NSError(domain: "LoaderFetcher", code: -3,
-                                            userInfo: [NSLocalizedDescriptionKey: "No data"]))); return
-            }
-
-            let parser = XMLParser(data: data)
-            let fetcher = LoaderFetcher()
-            fetcher.loader = loader
-            parser.delegate = fetcher
-            fetcher.versions.removeAll()
-
-            if parser.parse() {
-                completion(.success(fetcher.versions))
-            } else {
-                completion(.failure(NSError(domain: "LoaderFetcher", code: -4,
-                                            userInfo: [NSLocalizedDescriptionKey: "XML parse failed"])))
-            }
-        }
-        task.resume()
-    }
 
     // MARK: --------------- Fabric 实现 ---------------
-    private func fetchFabricMeta(completion: @escaping (Result<[ForgeVersion], Error>) -> Void) {
+    private func fetchAndCacheFabricMeta(urlStr: String,
+                                        cacheManager: CacheManager<[ForgeVersion]>,
+                                        completion: @escaping (Result<[ForgeVersion], Error>) -> Void) {
         struct FabricLoaderResponse: Decodable {
             let version: String
             let stable: Bool
         }
-
-        let urlStr = "https://meta.fabricmc.net/v2/versions/loader/"
+        
         guard let url = URL(string: urlStr) else {
             completion(.failure(NSError(domain: "LoaderFetcher", code: -1,
                                         userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
         }
-
+        
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error { completion(.failure(error)); return }
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
             guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
                 completion(.failure(NSError(domain: "LoaderFetcher", code: -2,
-                                            userInfo: [NSLocalizedDescriptionKey: "HTTP error"]))); return
+                                            userInfo: [NSLocalizedDescriptionKey: "HTTP error: \(response?.description ?? "unknown")"])))
+                return
             }
+            
             guard let data = data else {
                 completion(.failure(NSError(domain: "LoaderFetcher", code: -3,
-                                            userInfo: [NSLocalizedDescriptionKey: "No data"]))); return
+                                            userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+                return
             }
-
+            
             do {
+                // 解析Fabric的JSON响应
                 let fabricVersions = try JSONDecoder().decode([FabricLoaderResponse].self, from: data)
-                let mapped = fabricVersions.map {
-                    ForgeVersion(mcversion: "",              // 先留空，真正使用时由外部再过滤
-                                 version: $0.version,
-                                 type: $0.stable ? "stable" : "unstable",
-                                 date: "",
-                                 files: [],
-                                 loader: .fabric)
+                
+                // 映射为统一的ForgeVersion模型（保持与其他加载器格式一致）
+                let mappedVersions = fabricVersions.map { response in
+                    ForgeVersion(
+                        mcversion: "",  // Fabric这里不直接提供MC版本关联，后续通过其他接口获取
+                        version: response.version,
+                        type: response.stable ? "stable" : "unstable",
+                        date: "",       // Fabric接口不返回日期，留空
+                        files: [],
+                        loader: .fabric
+                    )
                 }
-                completion(.success(mapped))
+                
+                // 缓存解析后的版本数据
+                cacheManager.saveToCache(data: mappedVersions)
+                
+                // 返回结果
+                completion(.success(mappedVersions))
             } catch {
                 completion(.failure(error))
             }
         }
         task.resume()
     }
-
     // MARK: --------------- XMLParserDelegate（Forge/NeoForge 用） ---------------
     func parser(_ parser: XMLParser,
                 didStartElement elementName: String,
@@ -214,3 +254,4 @@ class LoaderFetcher: NSObject, XMLParserDelegate {
         currentElement = ""
     }
 }
+

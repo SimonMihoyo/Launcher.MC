@@ -11,16 +11,27 @@ import SwiftUI
 struct DownloadsView: View {
     @StateObject private var vm = VersionFetcherViewModel()
     @State private var showFilterPop = false
+    @State private var searchText = ""
+    @State private var isSearchActive = false  // 控制搜索框展开/收起状态
+    @FocusState private var searchFieldFocused: Bool
+    @EnvironmentObject var settings: SettingsStore
     
-    private var filteredVersions: [VersionInfo] {
+    private var filteredVersions: [VersionInfo]{
         vm.versions.filter { ver in
-            switch ver.type.lowercased() {
-            case "release":         return vm.showRelease
-            case "snapshot":        return vm.showSnapshot
-            case "old_alpha",
-                 "old_beta":       return vm.showAncient
-            default:               return false
-            }
+            // 1. 类型过滤
+            let typeMatch: Bool = {
+                switch ver.type.lowercased() {
+                case "release":  return vm.showRelease
+                case "snapshot": return vm.showSnapshot
+                case "old_alpha", "old_beta":
+                    return vm.showAncient
+                default: return false
+                }
+            }()
+            // 2. 关键字过滤（忽略大小写）
+            let keywordMatch = searchText.isEmpty ||
+            ver.id.localizedCaseInsensitiveContains(searchText)
+            return typeMatch && keywordMatch
         }
     }
     
@@ -63,10 +74,21 @@ struct DownloadsView: View {
                     .scrollContentBackground(.hidden)
                     .background(Color(nsColor: .controlBackgroundColor))
                 }
-                
             }
             .navigationTitle("Minecraft 版本")
+            .searchable(text: $searchText,
+                        placement: .toolbar,          // 把搜索框放在工具栏
+                        prompt: "搜索版本号…")
             .toolbar {
+                
+                ToolbarItem(placement: .primaryAction){
+                    Button {
+                        vm.refreshCacheAndReload()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showFilterPop = true
@@ -82,6 +104,7 @@ struct DownloadsView: View {
                 }
             }
         }
+        .tint(settings.accentColor)
     }
 }
 

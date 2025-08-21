@@ -8,13 +8,18 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var settings: SettingsStore
+    
     var body: some View {
         NavigationSplitView {
                     SideBar()
+                        .accentColor(settings.accentColor)
                 } detail: {
                     Text("Select an item from the sidebar")
                 }
+                
     }
+        
 }
 
 #Preview {

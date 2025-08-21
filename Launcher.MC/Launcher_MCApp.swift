@@ -9,12 +9,22 @@ import SwiftUI
 
 @main
 struct Launcher_MCApp: App {
+    let settings = SettingsStore()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .accentColor(settings.accentColor)
+                .environmentObject(settings) // 添加这一行
         }
         .commands {
-            MainMenu()
+            MainMenu(settings: settings)
+                
+        }
+        Settings {
+            SettingsView()
+                .accentColor(settings.accentColor)
+                .environmentObject(settings) // 添加这一行
         }
     }
 }

@@ -13,6 +13,7 @@ struct VersionDetail: View {
             Text("ID：\(version.id)")
             Text("类型：\(version.type)")
             Text("发布时间：\(version.releaseTime)")
+            Text("Address: \(version.url)")
         }
         .navigationTitle(version.id)
     }

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct AboutDialog: View {
+    var settings: SettingsStore
+    
     var body: some View {
         VStack(spacing: 16) {
             Image(nsImage: NSImage(named: "AppIcon") ?? NSImage())
@@ -30,15 +32,17 @@ struct AboutDialog: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            //Spacer()
+            Spacer()
             
             Button("Close") {
                 NSApp.keyWindow?.close()
             }
             .keyboardShortcut(.defaultAction)
             .padding(.bottom, 16)
+            .buttonStyle(.borderedProminent)
         }
         .frame(width: 300, height:270)
+        .tint(settings.accentColor)
     }
 }
 
@@ -46,7 +50,8 @@ class AboutWindowManager: NSObject, ObservableObject, NSWindowDelegate {
     static let shared = AboutWindowManager()
     private(set) var window: NSWindow?
     
-    func show() {
+    
+    func show(with settings: SettingsStore) {
         if window == nil {
             let window = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 350, height: 320),
@@ -55,7 +60,7 @@ class AboutWindowManager: NSObject, ObservableObject, NSWindowDelegate {
                 defer: false
             )
             window.title = "About Launcher.MC"
-            window.contentView = NSHostingView(rootView:AboutDialog())
+            window.contentView = NSHostingView(rootView:AboutDialog(settings: settings))
             window.isReleasedWhenClosed = false //防止自动释放，以便重复打开
             window.center()
             window.delegate = self //设置代理
@@ -72,5 +77,6 @@ class AboutWindowManager: NSObject, ObservableObject, NSWindowDelegate {
 }
 
 #Preview {
-    AboutDialog()
+    //@EnvironmentObject var settings: SettingsStore
+    //AboutDialog()
 }

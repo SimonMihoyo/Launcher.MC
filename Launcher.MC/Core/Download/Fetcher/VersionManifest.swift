@@ -15,6 +15,8 @@ class MinecraftVersionFetcher {
     private let cacheFileName = "minecraft_version_manifest.json"
     private let cacheExpirationDays: TimeInterval = 7 // 缓存7天过期
     
+    private let cacheManager = CacheManager<VersionManifest>(cacheFileName: "minecraft_version_manifest.json")
+    
     let fileutil = FileUtil()
     
     /// 获取缓存文件路径（返回 URL）
@@ -76,52 +78,33 @@ class MinecraftVersionFetcher {
     }
     
     /// 获取所有版本的基本信息（使用缓存）
-    func fetchAllVersions(ignoreSnapshots: Bool = false, completion: @escaping (Result<[VersionInfo], Error>) -> Void) {
-        // 先检查缓存
-        if isCacheValid(), let cachedManifest = loadFromCache() {
-            var versions = cachedManifest.versions
-            if ignoreSnapshots {
-                versions = versions.filter { $0.type != "snapshot" }
-            }
-            completion(.success(versions))
-            return
-        }
-        
-        // 缓存无效或不存在，从网络获取
-        guard let url = URL(string: versionManifestURL) else {
-            completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
-            return
-        }
-        
-        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-            guard let self = self else { return }
-            
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(NSError(domain: "No data received", code: -2, userInfo: nil)))
-                return
-            }
-            
-            do {
-                let manifest = try JSONDecoder().decode(VersionManifest.self, from: data)
-                // 保存到缓存
-                self.saveToCache(manifest: manifest)
-                
-                var versions = manifest.versions
+        func fetchAllVersions(ignoreSnapshots: Bool = false, completion: @escaping (Result<[VersionInfo], Error>) -> Void) {
+            // 先检查缓存
+            if cacheManager.isCacheValid(), let cachedManifest = cacheManager.loadFromCache() {
+                var versions = cachedManifest.versions
                 if ignoreSnapshots {
                     versions = versions.filter { $0.type != "snapshot" }
                 }
-                
                 completion(.success(versions))
-            } catch {
-                completion(.failure(error))
+                return
             }
-        }.resume()
-    }
+            
+            // 缓存无效或不存在，从网络获取
+            cacheManager.refreshCache(from: versionManifestURL) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let manifest):
+                        var versions = manifest.versions
+                        if ignoreSnapshots {
+                            versions = versions.filter { $0.type != "snapshot" }
+                        }
+                        completion(.success(versions))
+                    case .failure(let error):
+                        completion(.failure(error))
+                    }
+                }
+            }
+        }
     
     /// 获取指定版本的详细信息（包括下载地址）
     func fetchVersionDetails(for versionInfo: VersionInfo, completion: @escaping (Result<VersionDetails, Error>) -> Void) {

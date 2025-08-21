@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		E32E7C352E26339A009D0CD8 /* Launcher.MC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Launcher.MC.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3C82FCD2E577BF500939686 /* Launcher.MC.Help.help */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Launcher.MC.Help.help; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -20,6 +21,13 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		E32E7C322E26339A009D0CD8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3C82FCA2E577BF500939686 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -41,6 +49,7 @@
 			isa = PBXGroup;
 			children = (
 				E32E7C352E26339A009D0CD8 /* Launcher.MC.app */,
+				E3C82FCD2E577BF500939686 /* Launcher.MC.Help.help */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +79,25 @@
 			productReference = E32E7C352E26339A009D0CD8 /* Launcher.MC.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E3C82FCC2E577BF500939686 /* Launcher.MC.Help */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E3C82FCE2E577BF500939686 /* Build configuration list for PBXNativeTarget "Launcher.MC.Help" */;
+			buildPhases = (
+				E3C82FC92E577BF500939686 /* Sources */,
+				E3C82FCA2E577BF500939686 /* Frameworks */,
+				E3C82FCB2E577BF500939686 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Launcher.MC.Help;
+			packageProductDependencies = (
+			);
+			productName = Launcher.MC.Help;
+			productReference = E3C82FCD2E577BF500939686 /* Launcher.MC.Help.help */;
+			productType = "com.apple.product-type.bundle";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -81,6 +109,9 @@
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					E32E7C342E26339A009D0CD8 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					E3C82FCC2E577BF500939686 = {
 						CreatedOnToolsVersion = 16.4;
 					};
 				};
@@ -102,6 +133,7 @@
 			projectRoot = "";
 			targets = (
 				E32E7C342E26339A009D0CD8 /* Launcher.MC */,
+				E3C82FCC2E577BF500939686 /* Launcher.MC.Help */,
 			);
 		};
 /* End PBXProject section */
@@ -114,10 +146,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E3C82FCB2E577BF500939686 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E32E7C312E26339A009D0CD8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3C82FC92E577BF500939686 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -264,11 +310,13 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Launcher-MC-Info.plist";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "me.kirara.Launcher-MC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -293,17 +341,63 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Launcher-MC-Info.plist";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "me.kirara.Launcher-MC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		E3C82FCF2E577BF500939686 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4UWMB23RHB;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Launcher-MC-Help-Info.plist";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPrincipalClass = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.kirara.Launcher-MC-Help";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				WRAPPER_EXTENSION = help;
+			};
+			name = Debug;
+		};
+		E3C82FD02E577BF500939686 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4UWMB23RHB;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Launcher-MC-Help-Info.plist";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPrincipalClass = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.kirara.Launcher-MC-Help";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				WRAPPER_EXTENSION = help;
 			};
 			name = Release;
 		};
@@ -324,6 +418,15 @@
 			buildConfigurations = (
 				E32E7C422E26339B009D0CD8 /* Debug */,
 				E32E7C432E26339B009D0CD8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E3C82FCE2E577BF500939686 /* Build configuration list for PBXNativeTarget "Launcher.MC.Help" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E3C82FCF2E577BF500939686 /* Debug */,
+				E3C82FD02E577BF500939686 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

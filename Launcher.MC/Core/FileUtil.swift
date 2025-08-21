@@ -18,9 +18,6 @@ class FileUtil {
         }()
     /// 返回 ~/Library/Application Support/<AppName>/cache 的 URL
     private var cacheURL: URL {
-        // 1. 找到 Application Support
-        
-
         // 2. 拼接 App 名称
         let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
                    ?? Bundle.main.object(forInfoDictionaryKey: kCFBundleNameKey as String) as? String
