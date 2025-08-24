@@ -1,0 +1,11 @@
+/* 
+  Localizable.strings
+  Launcher.MC
+
+  Created by 四月初一茶染绮良 on 2025/7/17.
+  
+*/
+
+"AboutApp"="关于 Aether.Launcher";
+"PublishedBy"="以 GPLv3 协议发布，\n倾注了来自作者的热爱。";
+"CloseWindow"="关闭";

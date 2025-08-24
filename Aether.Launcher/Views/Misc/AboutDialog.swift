@@ -9,6 +9,15 @@ import SwiftUI
 
 struct AboutDialog: View {
     var settings: SettingsStore
+    private var shortVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+    }
+
+    private var buildNumber: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
+    
+    //private var Version : String = shortVersion + buildNumber
     
     var body: some View {
         VStack(spacing: 16) {
@@ -17,10 +26,14 @@ struct AboutDialog: View {
                 .frame(width: 64, height: 64)
                 .padding(.top, 20)
             
-            Text("Launcher.MC")
+            Text("Aether.Launcher")
                 .font(.system(size: 18, weight: .bold))
             
-            Text("Version 1.0.0")
+            // 用法
+            Text("Version \(shortVersion)")
+                .foregroundColor(.secondary)
+            Text("Build \(buildNumber)")
+                .font(.caption)
                 .foregroundColor(.secondary)
             
             Text("© 2025 SimonMihoyo.")
@@ -28,20 +41,23 @@ struct AboutDialog: View {
                 .padding(.top, 10)
                 .foregroundColor(.secondary)
             
-            Text("Published with GPLv3 and ❤️")
+            Text(LocalizedStringKey("PublishedBy"))
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)   // 居中对齐（可选）
+                .fixedSize(horizontal: false, vertical: true) // 允许垂直扩展
+                .lineSpacing(2)
             
             Spacer()
             
-            Button("Close") {
+            Button(LocalizedStringKey("CloseWindow")) {
                 NSApp.keyWindow?.close()
             }
             .keyboardShortcut(.defaultAction)
             .padding(.bottom, 16)
             .buttonStyle(.borderedProminent)
         }
-        .frame(width: 300, height:270)
+        .frame(width: 300, height:340)
         .tint(settings.accentColor)
     }
 }
@@ -54,12 +70,12 @@ class AboutWindowManager: NSObject, ObservableObject, NSWindowDelegate {
     func show(with settings: SettingsStore) {
         if window == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 350, height: 320),
+                contentRect: NSRect(x: 0, y: 0, width: 350, height: 390),
                 styleMask: [.titled, .closable],
                 backing: .buffered,
                 defer: false
             )
-            window.title = "About Launcher.MC"
+            window.title = "About Aether.Launcher"
             window.contentView = NSHostingView(rootView:AboutDialog(settings: settings))
             window.isReleasedWhenClosed = false //防止自动释放，以便重复打开
             window.center()
@@ -74,9 +90,4 @@ class AboutWindowManager: NSObject, ObservableObject, NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         window = nil //窗口关闭时清除引用
     }
-}
-
-#Preview {
-    //@EnvironmentObject var settings: SettingsStore
-    //AboutDialog()
 }

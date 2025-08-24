@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct Launcher_MCApp: App {
+struct Aether_Launcher: App {
     let settings = SettingsStore()
     
     var body: some Scene {

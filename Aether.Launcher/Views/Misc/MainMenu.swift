@@ -30,7 +30,7 @@ struct MainMenu: Commands {
             }
         }
         CommandGroup(replacing: .appInfo) {
-            Button(LocalizedStringKey("AboutLauncher.MC")) {
+            Button(LocalizedStringKey("AboutApp")) {
                 AboutWindowManager.shared.show(with: settings)
             }
         }
